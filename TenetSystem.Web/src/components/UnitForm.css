@@ -1,0 +1,81 @@
+.unit-form {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .unit-form .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .unit-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--primary-color);
+  }
+  
+  .unit-form .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+  
+  .unit-form .form-control:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+  
+  .unit-form select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px;
+    padding-right: 2.5rem;
+  }
+  
+  .unit-form .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .unit-form .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+  }
+  
+  .unit-form .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .unit-form .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  
+  .unit-form .alert {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 4px;
+  }
+  
+  .unit-form .alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+  
+  /* Required field indicator */
+  .unit-form label[for="buildingId"]::after,
+  .unit-form label[for="unitNumber"]::after,
+  .unit-form label[for="type"]::after {
+    content: "*";
+    color: #e74c3c;
+    margin-left: 4px;
+  }

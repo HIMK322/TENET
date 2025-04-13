@@ -14,9 +14,19 @@ builder.Services.AddControllers();
 
 // Add database context
 builder.Services.AddDbContext<PropertyDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("SqliteConnection"),
         b => b.MigrationsAssembly("TenetSystem.Infrastructure")));
+
+// cors
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", 
+        builder => builder
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
 
 // Add repositories
 builder.Services.AddScoped<BuildingRepository>();
@@ -51,7 +61,15 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
+app.UseCors("AllowFrontend");
 
 app.MapControllers();
+
+// Ensure database is created and migrations are applied
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<PropertyDbContext>();
+    dbContext.Database.EnsureCreated();
+}
 
 app.Run();

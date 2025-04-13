@@ -1,0 +1,139 @@
+/* Common styles for listing pages */
+.buildings-page,
+.units-page,
+.tenants-page,
+.rent-payments-page {
+  padding: 20px 0;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.empty-state {
+  padding: 30px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.empty-state p {
+  margin-bottom: 15px;
+  color: #666;
+}
+
+/* Grid layouts */
+.buildings-grid,
+.units-grid,
+.tenants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Card styling */
+.building-card,
+.unit-card,
+.tenant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-actions {
+  margin-top: auto;
+  padding-top: 15px;
+}
+
+/* Building specific */
+.building-address {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.building-stats {
+  display: flex;
+  margin: 15px 0;
+  gap: 20px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Unit specific */
+.unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.unit-building,
+.unit-type,
+.unit-rent {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.unit-tenant {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #eee;
+}
+
+/* Tenant specific */
+.tenant-info {
+  color: #555;
+  margin: 15px 0;
+}
+
+/* Table styling */
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* Rent Payments specific */
+.rent-payments-page h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .buildings-grid,
+  .units-grid,
+  .tenants-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .header-actions {
+    width: 100%;
+  }
+}
