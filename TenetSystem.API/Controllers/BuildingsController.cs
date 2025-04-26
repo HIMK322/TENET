@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using TenetSystem.API.DTOs;
+using TenetSystem.API.Utilities;
 using TenetSystem.Core.Models;
 using TenetSystem.Infrastructure.Repositories;
 using System.Collections.Generic;
@@ -19,15 +21,15 @@ namespace TenetSystem.API.Controllers
 
         // GET: api/Buildings
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
+        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
         {
             var buildings = await _buildingRepository.GetAllAsync();
-            return Ok(buildings);
+            return Ok(buildings.ToDtoList());
         }
 
         // GET: api/Buildings/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Building>> GetBuilding(int id)
+        public async Task<ActionResult<BuildingDto>> GetBuilding(int id)
         {
             var building = await _buildingRepository.GetByIdAsync(id);
             
@@ -36,15 +38,15 @@ namespace TenetSystem.API.Controllers
                 return NotFound();
             }
 
-            return Ok(building);
+            return Ok(building.ToDto());
         }
 
         // POST: api/Buildings
         [HttpPost]
-        public async Task<ActionResult<Building>> PostBuilding(Building building)
+        public async Task<ActionResult<BuildingDto>> PostBuilding(Building building)
         {
             await _buildingRepository.AddAsync(building);
-            return CreatedAtAction(nameof(GetBuilding), new { id = building.Id }, building);
+            return CreatedAtAction(nameof(GetBuilding), new { id = building.Id }, building.ToDto());
         }
 
         // PUT: api/Buildings/5

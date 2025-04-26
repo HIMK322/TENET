@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using TenetSystem.API.DTOs;
+using TenetSystem.API.Utilities;
 using TenetSystem.Core.Models;
-using TenetSystem.Infrastructure.Services;
 using TenetSystem.Infrastructure.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,15 +21,15 @@ namespace TenetSystem.API.Controllers
 
         // GET: api/Units
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Unit>>> GetUnits()
+        public async Task<ActionResult<IEnumerable<UnitDto>>> GetUnits()
         {
             var units = await _unitRepository.GetAllAsync();
-            return Ok(units);
+            return Ok(units.ToDtoList());
         }
 
         // GET: api/Units/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Unit>> GetUnit(int id)
+        public async Task<ActionResult<UnitDto>> GetUnit(int id)
         {
             var unit = await _unitRepository.GetByIdAsync(id);
             
@@ -37,23 +38,23 @@ namespace TenetSystem.API.Controllers
                 return NotFound();
             }
 
-            return Ok(unit);
+            return Ok(unit.ToDto());
         }
 
         // GET: api/Units/Vacant
         [HttpGet("vacant")]
-        public async Task<ActionResult<IEnumerable<Unit>>> GetVacantUnits()
+        public async Task<ActionResult<IEnumerable<UnitDto>>> GetVacantUnits()
         {
             var units = await _unitRepository.GetVacantUnitsAsync();
-            return Ok(units);
+            return Ok(units.ToDtoList());
         }
 
         // POST: api/Units
         [HttpPost]
-        public async Task<ActionResult<Unit>> PostUnit(Unit unit)
+        public async Task<ActionResult<UnitDto>> PostUnit(Unit unit)
         {
             await _unitRepository.AddAsync(unit);
-            return CreatedAtAction(nameof(GetUnit), new { id = unit.Id }, unit);
+            return CreatedAtAction(nameof(GetUnit), new { id = unit.Id }, unit.ToDto());
         }
 
         // PUT: api/Units/5

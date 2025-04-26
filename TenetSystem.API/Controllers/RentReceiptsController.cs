@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using TenetSystem.API.DTOs;
+using TenetSystem.API.Utilities;
 using TenetSystem.Core.Models;
 using TenetSystem.Infrastructure.Services;
 using TenetSystem.Infrastructure.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TenetSystem.API.Controllers
 {
@@ -22,15 +26,15 @@ namespace TenetSystem.API.Controllers
 
         // GET: api/RentReceipts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RentReceipt>>> GetRentReceipts()
+        public async Task<ActionResult<IEnumerable<RentReceiptDto>>> GetRentReceipts()
         {
             var receipts = await _rentReceiptRepository.GetAllAsync();
-            return Ok(receipts);
+            return Ok(receipts.ToDtoList());
         }
 
         // GET: api/RentReceipts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<RentReceipt>> GetRentReceipt(int id)
+        public async Task<ActionResult<RentReceiptDto>> GetRentReceipt(int id)
         {
             var receipt = await _rentReceiptRepository.GetByIdAsync(id);
             
@@ -39,28 +43,28 @@ namespace TenetSystem.API.Controllers
                 return NotFound();
             }
 
-            return Ok(receipt);
+            return Ok(receipt.ToDto());
         }
 
         // GET: api/RentReceipts/Unit/5
         [HttpGet("Unit/{unitId}")]
-        public async Task<ActionResult<IEnumerable<RentReceipt>>> GetUnitRentHistory(int unitId)
+        public async Task<ActionResult<IEnumerable<RentReceiptDto>>> GetUnitRentHistory(int unitId)
         {
             var receipts = await _rentReceiptRepository.GetByUnitIdAsync(unitId);
-            return Ok(receipts);
+            return Ok(receipts.ToDtoList());
         }
 
         // POST: api/RentReceipts
         [HttpPost]
-        public async Task<ActionResult<RentReceipt>> PostRentReceipt(RentReceipt rentReceipt)
+        public async Task<ActionResult<RentReceiptDto>> PostRentReceipt(RentReceipt rentReceipt)
         {
             await _rentReceiptRepository.AddAsync(rentReceipt);
-            return CreatedAtAction(nameof(GetRentReceipt), new { id = rentReceipt.Id }, rentReceipt);
+            return CreatedAtAction(nameof(GetRentReceipt), new { id = rentReceipt.Id }, rentReceipt.ToDto());
         }
 
         // POST: api/RentReceipts/Record
         [HttpPost("Record")]
-        public async Task<ActionResult> RecordRentPayment([FromBody] RentPaymentRequest request)
+        public async Task<ActionResult> RecordRentPayment([FromBody] RentPaymentRequestDto request)
         {
             await _propertyService.RecordRentPaymentAsync(
                 request.TenantId,
@@ -92,16 +96,6 @@ namespace TenetSystem.API.Controllers
         {
             await _rentReceiptRepository.DeleteAsync(id);
             return NoContent();
-        }
-
-        public class RentPaymentRequest
-        {
-            public int TenantId { get; set; }
-            public int UnitId { get; set; }
-            public decimal Amount { get; set; }
-            public DateTime RentMonth { get; set; }
-            public string PaymentMethod { get; set; }
-            public string Notes { get; set; }
         }
     }
 }

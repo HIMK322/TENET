@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using TenetSystem.API.DTOs;
+using TenetSystem.API.Utilities;
 using TenetSystem.Core.Models;
 using TenetSystem.Infrastructure.Services;
 using TenetSystem.Infrastructure.Repositories;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TenetSystem.API.Controllers
 {
@@ -23,15 +26,15 @@ namespace TenetSystem.API.Controllers
 
         // GET: api/Tenants
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tenant>>> GetTenants()
+        public async Task<ActionResult<IEnumerable<TenantDto>>> GetTenants()
         {
             var tenants = await _tenantRepository.GetAllAsync();
-            return Ok(tenants);
+            return Ok(tenants.ToDtoList());
         }
 
         // GET: api/Tenants/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Tenant>> GetTenant(int id)
+        public async Task<ActionResult<TenantDto>> GetTenant(int id)
         {
             var tenant = await _tenantRepository.GetByIdAsync(id);
             
@@ -40,38 +43,48 @@ namespace TenetSystem.API.Controllers
                 return NotFound();
             }
 
-            return Ok(tenant);
+            return Ok(tenant.ToDto());
         }
 
         // GET: api/Tenants/Current
         [HttpGet("current")]
-        public async Task<ActionResult<IEnumerable<Tenant>>> GetCurrentTenants()
+        public async Task<ActionResult<IEnumerable<TenantDto>>> GetCurrentTenants()
         {
             var tenants = await _propertyService.GetCurrentTenantsAsync();
-            return Ok(tenants);
+            return Ok(tenants.ToDtoList());
         }
 
         // GET: api/Tenants/5/RentHistory
         [HttpGet("{id}/RentHistory")]
-        public async Task<ActionResult<IEnumerable<RentReceipt>>> GetTenantRentHistory(int id)
+        public async Task<ActionResult<IEnumerable<RentReceiptDto>>> GetTenantRentHistory(int id)
         {
             var rentHistory = await _propertyService.GetTenantRentHistoryAsync(id);
-            return Ok(rentHistory);
+            return Ok(rentHistory.ToDtoList());
         }
 
         // POST: api/Tenants
         [HttpPost]
-        public async Task<ActionResult<Tenant>> PostTenant(Tenant tenant)
+        public async Task<ActionResult<TenantDto>> PostTenant(Tenant tenant)
         {
             await _tenantRepository.AddAsync(tenant);
-            return CreatedAtAction(nameof(GetTenant), new { id = tenant.Id }, tenant);
+            return CreatedAtAction(nameof(GetTenant), new { id = tenant.Id }, tenant.ToDto());
         }
 
         // POST: api/Tenants/MoveIn
         [HttpPost("MoveIn")]
-        public async Task<ActionResult> MoveInTenant([FromBody] MoveInRequest request)
+        public async Task<ActionResult> MoveInTenant([FromBody] MoveInRequestDto request)
         {
-            await _propertyService.MoveInTenantAsync(request.UnitId, request.Tenant, request.RentAmount);
+            // Convert DTO to entity
+            var tenant = new Tenant
+            {
+                Name = request.Tenant.Name,
+                PhoneNumber = request.Tenant.PhoneNumber,
+                Email = request.Tenant.Email,
+                Address = request.Tenant.Address,
+                MoveInDate = request.Tenant.MoveInDate
+            };
+            
+            await _propertyService.MoveInTenantAsync(request.UnitId, tenant, request.RentAmount);
             return Ok();
         }
 
@@ -102,13 +115,6 @@ namespace TenetSystem.API.Controllers
         {
             await _tenantRepository.DeleteAsync(id);
             return NoContent();
-        }
-
-        public class MoveInRequest
-        {
-            public int UnitId { get; set; }
-            public Tenant Tenant { get; set; }
-            public decimal RentAmount { get; set; }
         }
     }
 }

@@ -13,7 +13,7 @@ namespace TenetSystem.Core.Models
         public int? CurrentTenantId { get; set; }
         
         // Navigation properties
-        public Building Building { get; set; }
+        public Building? Building { get; set; }
         public Tenant? CurrentTenant { get; set; }
         public ICollection<RentReceipt> RentReceipts { get; set; } = new List<RentReceipt>();
         public ICollection<TenantHistory> TenantHistories { get; set; } = new List<TenantHistory>();

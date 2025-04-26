@@ -60,6 +60,7 @@ function UnitForm({ unit, isEditing = false }) {
       const formattedData = {
         ...formData,
         buildingId: parseInt(formData.buildingId),
+        type: formData.type === 'Shop' ? 0 : 1, 
         lastRentAmount: parseFloat(formData.lastRentAmount) || 0
       };
       
@@ -125,8 +126,8 @@ function UnitForm({ unit, isEditing = false }) {
             onChange={handleInputChange}
             required
           >
-            <option value="Apartment">Apartment</option>
-            <option value="Shop">Shop</option>
+            <option value="1">Apartment</option>
+            <option value="0">Shop</option>
           </select>
         </div>
         

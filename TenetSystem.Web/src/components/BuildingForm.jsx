@@ -79,7 +79,6 @@ function BuildingForm({ building, isEditing = false }) {
             className="form-control" 
             value={formData.address} 
             onChange={handleInputChange}
-            required
           />
         </div>
         
@@ -91,7 +90,7 @@ function BuildingForm({ building, isEditing = false }) {
             className="form-control" 
             value={formData.description} 
             onChange={handleInputChange}
-            rows="3"
+            rows="1"
           ></textarea>
         </div>
         
