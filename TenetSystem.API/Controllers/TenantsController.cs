@@ -74,6 +74,7 @@ namespace TenetSystem.API.Controllers
         [HttpPost("MoveIn")]
         public async Task<ActionResult> MoveInTenant([FromBody] MoveInRequestDto request)
         {
+            Console.WriteLine(" !!!!!!!!!!!!!! problem !!!!!!!!!!!!!!!!!!!!!");
             // Convert DTO to entity
             var tenant = new Tenant
             {

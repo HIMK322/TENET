@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { unitsApi, buildingsApi } from '../services/api';
+import { unitsApi, buildingsApi, tenantsApi } from '../services/api';
 import Card from './Card';
 import './UnitForm.css';
 
 function UnitForm({ unit, isEditing = false }) {
   const navigate = useNavigate();
   const [buildings, setBuildings] = useState([]);
+  const [tenets, setTenets] = useState([]);
   const [formData, setFormData] = useState({
     buildingId: '',
     unitNumber: '',
@@ -18,33 +19,39 @@ function UnitForm({ unit, isEditing = false }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchBuildings = async () => {
+    const fetchData = async () => {
       try {
-        const response = await buildingsApi.getAll();
-        setBuildings(response.data);
+        const buildingResponse = await buildingsApi.getAll();
+        setBuildings(buildingResponse.data);
+  
+        const tenetResponse = await tenantsApi.getAll();
+        setTenets(tenetResponse.data);
         
         if (unit) {
           setFormData({
             buildingId: unit.buildingId || '',
+            tenetId: unit.tenetId || '',
             unitNumber: unit.unitNumber || '',
-            type: unit.type || 'Apartment',
+            // type: unit.type || 'Apartment'
+            type: unit.type?.toString() || '1',
             lastRentAmount: unit.lastRentAmount || ''
           });
-        } else if (response.data.length > 0) {
+        } else if (buildingResponse.data.length > 0) {
           // Set default buildingId if no unit is provided and buildings exist
-          setFormData(prev => ({ ...prev, buildingId: response.data[0].id }));
+          setFormData(prev => ({ ...prev, buildingId: buildingResponse.data[0].id }));
         }
         
         setInitialLoading(false);
       } catch (err) {
-        console.error('Error fetching buildings:', err);
-        setError('Failed to load buildings. Please try again later.');
+        console.error('Error fetching data:', err);
+        setError('Failed to load form data. Please try again later.');
         setInitialLoading(false);
       }
     };
-
-    fetchBuildings();
+  
+    fetchData();
   }, [unit]);
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -55,11 +62,12 @@ function UnitForm({ unit, isEditing = false }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+    console.log( parseInt(formData.tenetId));
     try {
       const formattedData = {
         ...formData,
         buildingId: parseInt(formData.buildingId),
+        currentTenantId: parseInt(formData.tenetId),
         type: formData.type === 'Shop' ? 0 : 1, 
         lastRentAmount: parseFloat(formData.lastRentAmount) || 0
       };
@@ -87,7 +95,7 @@ function UnitForm({ unit, isEditing = false }) {
     <Card title={isEditing ? 'Edit Unit' : 'Add New Unit'}>
       <form onSubmit={handleSubmit} className="unit-form">
         <div className="form-group">
-          <label htmlFor="buildingId">Building*</label>
+          <label htmlFor="buildingId">Building</label>
           <select 
             id="buildingId" 
             name="buildingId" 
@@ -104,7 +112,27 @@ function UnitForm({ unit, isEditing = false }) {
         </div>
         
         <div className="form-group">
-          <label htmlFor="unitNumber">Unit Number*</label>
+          <label htmlFor="tenetId">Tenants</label>
+          <select 
+            id="tenetId" 
+            name="tenetId" 
+            className="form-control" 
+            value={formData.tenetId} 
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Select Tenant</option>
+            {tenets.map(tenet => (
+              <option key={tenet.id} value={tenet.id}>
+                {tenet.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        
+        <div className="form-group">
+          <label htmlFor="unitNumber">Unit Number</label>
           <input 
             type="text" 
             id="unitNumber" 
@@ -117,7 +145,7 @@ function UnitForm({ unit, isEditing = false }) {
         </div>
         
         <div className="form-group">
-          <label htmlFor="type">Unit Type*</label>
+          <label htmlFor="type">Unit Type</label>
           <select 
             id="type" 
             name="type" 

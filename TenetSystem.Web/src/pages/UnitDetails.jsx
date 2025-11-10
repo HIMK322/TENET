@@ -15,6 +15,8 @@ function UnitDetails() {
   const [error, setError] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMoveOutConfirm, setShowMoveOutConfirm] = useState(false);
+  const [availableTenants, setAvailableTenants] = useState([]);
+  const [selectedTenantId, setSelectedTenantId] = useState('');
 
   useEffect(() => {
     const fetchUnitData = async () => {
@@ -142,6 +144,15 @@ function UnitDetails() {
                 </Link>
               </span>
             </div>
+
+            <div className="detail-row">
+              <span className="detail-label">Tenet:</span>
+              <span className="detail-value">
+                <Link to={`/tenant/${unit.currentTenant}`}>
+                  {unit.currentTenant ?.name || 'No Tenet'}
+                </Link>
+              </span>
+            </div>
             
             <div className="detail-row">
               <span className="detail-label">Type:</span>
@@ -149,12 +160,12 @@ function UnitDetails() {
             </div>
             
             <div className="detail-row">
-              <span className="detail-label">Last Rent Amount:</span>
-              <span className="detail-value">${unit.lastRentAmount}</span>
+              <span className="detail-label">Last Rent Amount : </span>
+              <span className="detail-value">{ unit.lastRentAmount}</span>
             </div>
           </Card>
           
-          <Card title="Current Tenant">
+          {/* <Card title="Current Tenant">
             {unit.currentTenant ? (
               <div className="tenant-info">
                 <div className="detail-row">
@@ -200,7 +211,7 @@ function UnitDetails() {
                 </Link>
               </div>
             )}
-          </Card>
+          </Card> */}
           
           <Card title="Rent History">
             {rentHistory.length > 0 ? (

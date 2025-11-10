@@ -143,7 +143,7 @@ function TenantDetails() {
             )}
           </Card>
           
-          <Card title="Occupied Units">
+          {/* <Card title="Occupied Units">
             {tenant.units && tenant.units.length > 0 ? (
               <div className="units-table-container">
                 <table>
@@ -179,7 +179,7 @@ function TenantDetails() {
                 </Link>
               </div>
             )}
-          </Card>
+          </Card> */}
           
           <Card title="Rent Payment History">
             {rentHistory.length > 0 ? (

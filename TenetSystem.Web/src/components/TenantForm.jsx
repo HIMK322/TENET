@@ -126,7 +126,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
     <Card title={isEditing ? 'Edit Tenant' : (isMoveIn ? 'Move-In New Tenant' : 'Add New Tenant')}>
       <form onSubmit={handleSubmit} className="tenant-form">
         <div className="form-group">
-          <label htmlFor="name">Tenant Name*</label>
+          <label htmlFor="name">Tenant Name</label>
           <input 
             type="text" 
             id="name" 
@@ -139,7 +139,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
         </div>
         
         <div className="form-group">
-          <label htmlFor="phoneNumber">Phone Number*</label>
+          <label htmlFor="phoneNumber">Phone Number</label>
           <input 
             type="tel" 
             id="phoneNumber" 
@@ -176,7 +176,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
         </div>
         
         <div className="form-group">
-          <label htmlFor="moveInDate">Move-In Date*</label>
+          <label htmlFor="moveInDate">Move-In Date</label>
           <input 
             type="date" 
             id="moveInDate" 
@@ -191,7 +191,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
         {isMoveIn && (
           <>
             <div className="form-group">
-              <label htmlFor="unitId">Unit*</label>
+              <label htmlFor="unitId">Unit</label>
               <select 
                 id="unitId" 
                 name="unitId" 
@@ -210,7 +210,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
             </div>
             
             <div className="form-group">
-              <label htmlFor="rentAmount">Rent Amount ($)*</label>
+              <label htmlFor="rentAmount">Rent Amount</label>
               <input 
                 type="number" 
                 id="rentAmount" 
