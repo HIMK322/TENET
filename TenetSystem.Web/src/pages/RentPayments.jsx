@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
+import Select from 'react-select'
 import { Link } from 'react-router-dom';
 import { rentReceiptsApi, tenantsApi, unitsApi } from '../services/api';
 import Card from '../components/Card';
 import './RentPayments.css';
+import { useMemo } from 'react';
 
 function RentPayments() {
+  const [filteredResult, setFilteredResult] = useState([]);
+  const [searchterm, setSearchTerm] = useState([]);
   const [receipts, setReceipts] = useState([]);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
   const [tenants, setTenants] = useState([]);
@@ -85,6 +89,13 @@ function RentPayments() {
     }
   };
 
+
+const tenantUnits = useMemo(() => {
+  if (!paymentData.tenantId) return units;
+  return units.filter(u => u.currentTenantId === parseInt(paymentData.tenantId));
+}, [units, paymentData.tenantId]);
+
+
   if (loading) return <div>Loading rent payments...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
@@ -111,42 +122,83 @@ function RentPayments() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="tenantId">Tenant</label>
-              <select 
-                id="tenantId" 
-                name="tenantId" 
-                className="form-control" 
-                value={paymentData.tenantId} 
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Tenant</option>
-                {tenants.map(tenant => (
-                  <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
-                ))}
-              </select>
+              <Select
+                id="tenantId"
+                name="tenantId"
+                options={tenants.map(tenant => ({
+                  value: tenant.id,
+                  label: tenant.name
+                }))}
+                value={
+                  tenants
+                    .filter(t => t.id === parseInt(paymentData.tenantId))
+                    .map(t => ({ value: t.id, label: t.name }))[0] || null
+                }
+                onChange={option => {
+                  const tenantId = option ? option.value : '';
+                  setPaymentData(prev => ({ ...prev, tenantId }));
+
+                  if (tenantId) {
+                    const tenantUnitsList = units.filter(u => u.currentTenantId === tenantId);
+                    if (tenantUnitsList.length === 1) {
+                      setPaymentData(prev => ({
+                        ...prev,
+                        unitId: tenantUnitsList[0].id,
+                        amount: tenantUnitsList[0].lastRentAmount?.toString() || ''
+                      }));
+                    } else {
+                      setPaymentData(prev => ({ ...prev, unitId: '', amount: '' }));
+                    }
+                  } else {
+                    setPaymentData(prev => ({ ...prev, unitId: '', amount: '' }));
+                  }
+                }}
+                placeholder="Select or search tenant..."
+                isClearable
+              />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="unitId">Unit</label>
-              <select 
-                id="unitId" 
-                name="unitId" 
-                className="form-control" 
-                value={paymentData.unitId} 
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select Unit</option>
-                {units.map(unit => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.building?.name || 'Unknown Building'} - Unit {unit.unitNumber}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
+              <Select
+                id="unitId"
+                name="unitId"
+                options={tenantUnits.map(unit => ({
+                  value: unit.id,
+                  label: `${unit.building?.name || 'Unknown Building'} - Unit ${unit.unitNumber}`
+                }))}
+                value={
+                  units
+                    .filter(u => u.id === parseInt(paymentData.unitId))
+                    .map(u => ({
+                      value: u.id,
+                      label: `${u.building?.name || 'Unknown Building'} - Unit ${u.unitNumber}`
+                    }))[0] || null
+                }
+                onChange={option => {
+                  const unitId = option ? option.value : '';
+                  setPaymentData(prev => ({ ...prev, unitId }));
+
+                  if (unitId) {
+                    const selectedUnit = units.find(u => u.id === unitId);
+                    if (selectedUnit) {
+                      setPaymentData(prev => ({
+                        ...prev,
+                        tenantId: selectedUnit.currentTenantId || '',
+                        amount: selectedUnit.lastRentAmount?.toString() || ''  // auto-fill amount
+                      }));
+                    }
+                  } else {
+                    // unit cleared → reset tenant and amount
+                    setPaymentData(prev => ({ ...prev, tenantId: '', amount: '' }));
+                  }
+                }}
+                placeholder="Select or search unit..."
+                isClearable
+              />
+            </div>                        
             <div className="form-group">
-              <label htmlFor="amount">Amount ($)</label>
+              <label htmlFor="amount">Amount</label>
               <input 
                 type="number" 
                 id="amount" 
@@ -161,7 +213,7 @@ function RentPayments() {
             </div>
             
             <div className="form-group">
-              <label htmlFor="rentMonth">Rent Month</label>
+              <label htmlFor="rentMonth">Payment date</label>
               <input 
                 type="date" 
                 id="rentMonth" 
@@ -170,26 +222,10 @@ function RentPayments() {
                 value={paymentData.rentMonth} 
                 onChange={handleInputChange}
                 required
+                readOnly
               />
             </div>
-            
-            <div className="form-group">
-              <label htmlFor="paymentMethod">Payment Method</label>
-              <select 
-                id="paymentMethod" 
-                name="paymentMethod" 
-                className="form-control" 
-                value={paymentData.paymentMethod} 
-                onChange={handleInputChange}
-                required
-              >
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="Check">Check</option>
-                <option value="Credit Card">Credit Card</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+  
             
             <div className="form-group">
               <label htmlFor="notes">Notes</label>
@@ -218,7 +254,6 @@ function RentPayments() {
         </Card>
       )}
       
-      <h2>Recent Payments</h2>
       
       {receipts.length === 0 ? (
         <div className="empty-state">
@@ -240,7 +275,6 @@ function RentPayments() {
                 <th>Unit</th>
                 <th>Amount</th>
                 <th>Rent Period</th>
-                <th>Payment Method</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -256,7 +290,6 @@ function RentPayments() {
                   </td>
                   <td>${receipt.amountPaid}</td>
                   <td>{new Date(receipt.rentMonth).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}</td>
-                  <td>{receipt.paymentMethod}</td>
                   <td>
                     <Link to={`/rent-payments/${receipt.id}`} className="btn">View</Link>
                   </td>
