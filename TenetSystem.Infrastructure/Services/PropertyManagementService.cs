@@ -77,13 +77,13 @@ namespace TenetSystem.Infrastructure.Services
         }
 
         // Record rent payment
-        public async Task RecordRentPaymentAsync(int tenantId, int unitId, decimal amount, DateTime rentMonth, string paymentMethod, string notes = null)
+        public async Task RecordRentPaymentAsync(int tenantId, int unitId, decimal amount, DateTime paymentDate, DateTime rentMonth, string paymentMethod, string notes = null)
         {
             var receipt = new RentReceipt
             {
                 TenantId = tenantId,
                 UnitId = unitId,
-                PaymentDate = DateTime.Now,
+                PaymentDate = paymentDate,
                 RentMonth = new DateTime(rentMonth.Year, rentMonth.Month, 1),
                 AmountPaid = amount,
                 PaymentMethod = paymentMethod,

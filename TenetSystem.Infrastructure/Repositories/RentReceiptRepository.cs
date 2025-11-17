@@ -51,6 +51,36 @@ namespace TenetSystem.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<DateTime?> GetNextUnpaidMonthAsync(int tenantId, int unitId)
+        {
+            var tenant = await _context.Tenants.FindAsync(tenantId);
+            if (tenant == null) return null;
+
+            var lastPayment = await _context.RentReceipts
+                .Where(r => r.TenantId == tenantId && r.UnitId == unitId)
+                .OrderByDescending(r => r.RentMonth)
+                .FirstOrDefaultAsync();
+
+            if (lastPayment == null)
+            {
+                // No payments yet, return first month after move-in
+                return new DateTime(tenant.MoveInDate.Year, tenant.MoveInDate.Month, 1);
+            }
+
+            // Return next month after last payment
+            return lastPayment.RentMonth.AddMonths(1);
+        }
+
+        public async Task<bool> HasPaymentForMonthAsync(int tenantId, int unitId, DateTime rentMonth)
+        {
+            var normalizedMonth = new DateTime(rentMonth.Year, rentMonth.Month, 1);
+            return await _context.RentReceipts
+                .AnyAsync(r => r.TenantId == tenantId && 
+                              r.UnitId == unitId && 
+                              r.RentMonth.Year == normalizedMonth.Year && 
+                              r.RentMonth.Month == normalizedMonth.Month);
+        }
+
         public async Task<RentReceipt> AddAsync(RentReceipt rentReceipt)
         {
             _context.RentReceipts.Add(rentReceipt);

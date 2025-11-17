@@ -99,6 +99,7 @@ namespace TenetSystem.API.DTOs
         public int TenantId { get; set; }
         public int UnitId { get; set; }
         public decimal Amount { get; set; }
+        public DateTime PaymentDate { get; set; }
         public DateTime RentMonth { get; set; }
         public string PaymentMethod { get; set; }
         public string Notes { get; set; }

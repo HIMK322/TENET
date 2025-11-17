@@ -54,6 +54,20 @@ namespace TenetSystem.API.Controllers
             return Ok(receipts.ToDtoList());
         }
 
+        // GET: api/RentReceipts/NextUnpaidMonth?tenantId=1&unitId=2
+        [HttpGet("NextUnpaidMonth")]
+        public async Task<ActionResult<DateTime?>> GetNextUnpaidMonth([FromQuery] int tenantId, [FromQuery] int unitId)
+        {
+            var nextMonth = await _rentReceiptRepository.GetNextUnpaidMonthAsync(tenantId, unitId);
+            
+            if (nextMonth == null)
+            {
+                return NotFound("Tenant not found");
+            }
+
+            return Ok(nextMonth);
+        }
+
         // POST: api/RentReceipts
         [HttpPost]
         public async Task<ActionResult<RentReceiptDto>> PostRentReceipt(RentReceipt rentReceipt)
@@ -66,10 +80,22 @@ namespace TenetSystem.API.Controllers
         [HttpPost("Record")]
         public async Task<ActionResult> RecordRentPayment([FromBody] RentPaymentRequestDto request)
         {
+            // Check for duplicate payment
+            var hasDuplicate = await _rentReceiptRepository.HasPaymentForMonthAsync(
+                request.TenantId, 
+                request.UnitId, 
+                request.RentMonth);
+
+            if (hasDuplicate)
+            {
+                return BadRequest("A payment for this month already exists");
+            }
+
             await _propertyService.RecordRentPaymentAsync(
                 request.TenantId,
                 request.UnitId,
                 request.Amount,
+                request.PaymentDate,
                 request.RentMonth,
                 request.PaymentMethod,
                 request.Notes);
