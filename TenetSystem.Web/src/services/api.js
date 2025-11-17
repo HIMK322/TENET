@@ -47,6 +47,7 @@ export const rentReceiptsApi = {
   getAll: () => api.get('/rentreceipts'),
   getById: (id) => api.get(`/rentreceipts/${id}`),
   getByUnit: (unitId) => api.get(`/rentreceipts/Unit/${unitId}`),
+  getNextUnpaidMonth: (tenantId, unitId) => api.get(`/rentreceipts/NextUnpaidMonth?tenantId=${tenantId}&unitId=${unitId}`),
   create: (receipt) => api.post('/rentreceipts', receipt),
   recordPayment: (paymentData) => api.post('/rentreceipts/Record', paymentData),
   update: (id, receipt) => api.put(`/rentreceipts/${id}`, receipt),

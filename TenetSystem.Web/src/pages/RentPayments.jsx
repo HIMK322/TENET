@@ -7,8 +7,6 @@ import './RentPayments.css';
 import { useMemo } from 'react';
 
 function RentPayments() {
-  const [filteredResult, setFilteredResult] = useState([]);
-  const [searchterm, setSearchTerm] = useState([]);
   const [receipts, setReceipts] = useState([]);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
   const [tenants, setTenants] = useState([]);
@@ -19,7 +17,8 @@ function RentPayments() {
     tenantId: '',
     unitId: '',
     amount: '',
-    rentMonth: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+    paymentDate: new Date().toISOString().split('T')[0],
+    rentMonth: '',
     paymentMethod: 'Cash',
     notes: ''
   });
@@ -50,6 +49,31 @@ function RentPayments() {
     fetchData();
   }, [submitSuccess]);
 
+  // Fetch next unpaid month when tenant and unit are selected
+  useEffect(() => {
+    const fetchNextUnpaidMonth = async () => {
+      console.log('teeessst')
+      if (paymentData.tenantId && paymentData.unitId) {
+        try {
+          const response = await rentReceiptsApi.getNextUnpaidMonth(
+            paymentData.tenantId,
+            paymentData.unitId
+          );
+          
+          if (response.data) {
+            const nextMonth = new Date(response.data);
+            const formattedMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+            setPaymentData(prev => ({ ...prev, rentMonth: formattedMonth }));
+          }
+        } catch (err) {
+          console.error('Error fetching next unpaid month:', err);
+        }
+      }
+    };
+
+    fetchNextUnpaidMonth();
+  }, [paymentData.tenantId, paymentData.unitId]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPaymentData(prev => ({ ...prev, [name]: value }));
@@ -62,11 +86,16 @@ function RentPayments() {
     setSubmitSuccess(false);
     
     try {
+      // Convert YYYY-MM to first day of month
+      const [year, month] = paymentData.rentMonth.split('-');
+      const rentMonthDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1, 12, 0, 0));
+
       await rentReceiptsApi.recordPayment({
         tenantId: parseInt(paymentData.tenantId),
         unitId: parseInt(paymentData.unitId),
         amount: parseFloat(paymentData.amount),
-        rentMonth: new Date(paymentData.rentMonth),
+        paymentDate: new Date(paymentData.paymentDate),
+        rentMonth: rentMonthDate,
         paymentMethod: paymentData.paymentMethod,
         notes: paymentData.notes
       });
@@ -77,24 +106,24 @@ function RentPayments() {
         tenantId: '',
         unitId: '',
         amount: '',
-        rentMonth: new Date().toISOString().split('T')[0],
+        paymentDate: new Date().toISOString().split('T')[0],
+        rentMonth: '',
         paymentMethod: 'Cash',
         notes: ''
       });
     } catch (err) {
       console.error('Error recording payment:', err);
-      setSubmitError('Failed to record payment. Please try again.');
+      const errorMessage = err.response?.data || 'Failed to record payment. Please try again.';
+      setSubmitError(errorMessage);
     } finally {
       setSubmitLoading(false);
     }
   };
 
-
-const tenantUnits = useMemo(() => {
-  if (!paymentData.tenantId) return units;
-  return units.filter(u => u.currentTenantId === parseInt(paymentData.tenantId));
-}, [units, paymentData.tenantId]);
-
+  const tenantUnits = useMemo(() => {
+    if (!paymentData.tenantId) return units;
+    return units.filter(u => u.currentTenantId === parseInt(paymentData.tenantId));
+  }, [units, paymentData.tenantId]);
 
   if (loading) return <div>Loading rent payments...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
@@ -136,7 +165,7 @@ const tenantUnits = useMemo(() => {
                 }
                 onChange={option => {
                   const tenantId = option ? option.value : '';
-                  setPaymentData(prev => ({ ...prev, tenantId }));
+                  setPaymentData(prev => ({ ...prev, tenantId, unitId: '', amount: '', rentMonth: '' }));
 
                   if (tenantId) {
                     const tenantUnitsList = units.filter(u => u.currentTenantId === tenantId);
@@ -146,11 +175,7 @@ const tenantUnits = useMemo(() => {
                         unitId: tenantUnitsList[0].id,
                         amount: tenantUnitsList[0].lastRentAmount?.toString() || ''
                       }));
-                    } else {
-                      setPaymentData(prev => ({ ...prev, unitId: '', amount: '' }));
                     }
-                  } else {
-                    setPaymentData(prev => ({ ...prev, unitId: '', amount: '' }));
                   }
                 }}
                 placeholder="Select or search tenant..."
@@ -177,7 +202,7 @@ const tenantUnits = useMemo(() => {
                 }
                 onChange={option => {
                   const unitId = option ? option.value : '';
-                  setPaymentData(prev => ({ ...prev, unitId }));
+                  setPaymentData(prev => ({ ...prev, unitId, rentMonth: '' }));
 
                   if (unitId) {
                     const selectedUnit = units.find(u => u.id === unitId);
@@ -185,18 +210,18 @@ const tenantUnits = useMemo(() => {
                       setPaymentData(prev => ({
                         ...prev,
                         tenantId: selectedUnit.currentTenantId || '',
-                        amount: selectedUnit.lastRentAmount?.toString() || ''  // auto-fill amount
+                        amount: selectedUnit.lastRentAmount?.toString() || ''
                       }));
                     }
                   } else {
-                    // unit cleared → reset tenant and amount
                     setPaymentData(prev => ({ ...prev, tenantId: '', amount: '' }));
                   }
                 }}
                 placeholder="Select or search unit..."
                 isClearable
               />
-            </div>                        
+            </div>
+
             <div className="form-group">
               <label htmlFor="amount">Amount</label>
               <input 
@@ -211,21 +236,32 @@ const tenantUnits = useMemo(() => {
                 required
               />
             </div>
-            
+
             <div className="form-group">
-              <label htmlFor="rentMonth">Payment date</label>
+              <label htmlFor="paymentDate">Payment Date</label>
               <input 
                 type="date" 
+                id="paymentDate" 
+                name="paymentDate" 
+                className="form-control" 
+                value={paymentData.paymentDate} 
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="rentMonth">Rent Month</label>
+              <input 
+                type="month" 
                 id="rentMonth" 
                 name="rentMonth" 
                 className="form-control" 
                 value={paymentData.rentMonth} 
                 onChange={handleInputChange}
                 required
-                readOnly
               />
             </div>
-  
             
             <div className="form-group">
               <label htmlFor="notes">Notes</label>
@@ -254,7 +290,6 @@ const tenantUnits = useMemo(() => {
         </Card>
       )}
       
-      
       {receipts.length === 0 ? (
         <div className="empty-state">
           <p>No rent payments recorded yet.</p>
@@ -270,7 +305,7 @@ const tenantUnits = useMemo(() => {
           <table>
             <thead>
               <tr>
-                <th>Date</th>
+                <th>Payment Date</th>
                 <th>Tenant</th>
                 <th>Unit</th>
                 <th>Amount</th>
