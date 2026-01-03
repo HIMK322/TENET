@@ -13,6 +13,8 @@ function RentPayments() {
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [monthsCount, setMonthsCount] = useState(1);
+  const [monthlyRent, setMonthlyRent] = useState(0);
   const [paymentData, setPaymentData] = useState({
     tenantId: '',
     unitId: '',
@@ -52,7 +54,6 @@ function RentPayments() {
   // Fetch next unpaid month when tenant and unit are selected
   useEffect(() => {
     const fetchNextUnpaidMonth = async () => {
-      console.log('teeessst')
       if (paymentData.tenantId && paymentData.unitId) {
         try {
           const response = await rentReceiptsApi.getNextUnpaidMonth(
@@ -74,9 +75,44 @@ function RentPayments() {
     fetchNextUnpaidMonth();
   }, [paymentData.tenantId, paymentData.unitId]);
 
+  // Update amount when months count changes
+  useEffect(() => {
+    if (monthlyRent > 0) {
+      setPaymentData(prev => ({ 
+        ...prev, 
+        amount: (monthlyRent * monthsCount).toFixed(2)
+      }));
+    }
+  }, [monthsCount, monthlyRent]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPaymentData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleIncrementMonths = () => {
+    setMonthsCount(prev => prev + 1);
+  };
+
+  const handleDecrementMonths = () => {
+    if (monthsCount > 1) {
+      setMonthsCount(prev => prev - 1);
+    }
+  };
+
+  const getRentMonthDisplay = () => {
+    if (!paymentData.rentMonth) return '';
+    
+    if (monthsCount === 1) {
+      return paymentData.rentMonth;
+    }
+    
+    const [year, month] = paymentData.rentMonth.split('-');
+    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + monthsCount - 1);
+    
+    return `${paymentData.rentMonth} (${monthsCount} months)`;
   };
 
   const handleSubmit = async (e) => {
@@ -86,22 +122,30 @@ function RentPayments() {
     setSubmitSuccess(false);
     
     try {
-      // Convert YYYY-MM to first day of month
       const [year, month] = paymentData.rentMonth.split('-');
-      const rentMonthDate = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1, 12, 0, 0));
+      const startMonth = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1, 12, 0, 0));
+      const paymentDate = new Date(paymentData.paymentDate + 'T12:00:00Z');
 
-      await rentReceiptsApi.recordPayment({
-        tenantId: parseInt(paymentData.tenantId),
-        unitId: parseInt(paymentData.unitId),
-        amount: parseFloat(paymentData.amount),
-        paymentDate: new Date(paymentData.paymentDate),
-        rentMonth: rentMonthDate,
-        paymentMethod: paymentData.paymentMethod,
-        notes: paymentData.notes
-      });
+      // Create payment records for each month
+      for (let i = 0; i < monthsCount; i++) {
+        const rentMonthDate = new Date(startMonth);
+        rentMonthDate.setMonth(rentMonthDate.getMonth() + i);
+
+        await rentReceiptsApi.recordPayment({
+          tenantId: parseInt(paymentData.tenantId),
+          unitId: parseInt(paymentData.unitId),
+          amount: parseFloat(monthlyRent),
+          paymentDate: paymentDate,
+          rentMonth: rentMonthDate,
+          paymentMethod: paymentData.paymentMethod,
+          notes: paymentData.notes
+        });
+      }
       
       setSubmitSuccess(true);
       setShowRecordPayment(false);
+      setMonthsCount(1);
+      setMonthlyRent(0);
       setPaymentData({
         tenantId: '',
         unitId: '',
@@ -165,15 +209,19 @@ function RentPayments() {
                 }
                 onChange={option => {
                   const tenantId = option ? option.value : '';
+                  setMonthsCount(1);
+                  setMonthlyRent(0);
                   setPaymentData(prev => ({ ...prev, tenantId, unitId: '', amount: '', rentMonth: '' }));
 
                   if (tenantId) {
                     const tenantUnitsList = units.filter(u => u.currentTenantId === tenantId);
                     if (tenantUnitsList.length === 1) {
+                      const rent = tenantUnitsList[0].lastRentAmount || 0;
+                      setMonthlyRent(rent);
                       setPaymentData(prev => ({
                         ...prev,
                         unitId: tenantUnitsList[0].id,
-                        amount: tenantUnitsList[0].lastRentAmount?.toString() || ''
+                        amount: rent.toString()
                       }));
                     }
                   }
@@ -202,18 +250,22 @@ function RentPayments() {
                 }
                 onChange={option => {
                   const unitId = option ? option.value : '';
+                  setMonthsCount(1);
                   setPaymentData(prev => ({ ...prev, unitId, rentMonth: '' }));
 
                   if (unitId) {
                     const selectedUnit = units.find(u => u.id === unitId);
                     if (selectedUnit) {
+                      const rent = selectedUnit.lastRentAmount || 0;
+                      setMonthlyRent(rent);
                       setPaymentData(prev => ({
                         ...prev,
                         tenantId: selectedUnit.currentTenantId || '',
-                        amount: selectedUnit.lastRentAmount?.toString() || ''
+                        amount: rent.toString()
                       }));
                     }
                   } else {
+                    setMonthlyRent(0);
                     setPaymentData(prev => ({ ...prev, tenantId: '', amount: '' }));
                   }
                 }}
@@ -224,17 +276,44 @@ function RentPayments() {
 
             <div className="form-group">
               <label htmlFor="amount">Amount</label>
-              <input 
-                type="number" 
-                id="amount" 
-                name="amount" 
-                className="form-control" 
-                value={paymentData.amount} 
-                onChange={handleInputChange}
-                step="0.01"
-                min="0"
-                required
-              />
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  className="btn" 
+                  onClick={handleDecrementMonths}
+                  disabled={monthsCount <= 1 || !monthlyRent}
+                  style={{ padding: '8px 16px' }}
+                >
+                  -
+                </button>
+                <input 
+                  type="number" 
+                  id="amount" 
+                  name="amount" 
+                  className="form-control" 
+                  value={paymentData.amount} 
+                  onChange={handleInputChange}
+                  step="0.01"
+                  min="0"
+                  required
+                  readOnly
+                  style={{ flex: 1 }}
+                />
+                <button 
+                  type="button" 
+                  className="btn" 
+                  onClick={handleIncrementMonths}
+                  disabled={!monthlyRent}
+                  style={{ padding: '8px 16px' }}
+                >
+                  +
+                </button>
+              </div>
+              {monthsCount > 1 && (
+                <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+                  Paying for {monthsCount} months (${monthlyRent} × {monthsCount})
+                </small>
+              )}
             </div>
 
             <div className="form-group">
@@ -260,7 +339,13 @@ function RentPayments() {
                 value={paymentData.rentMonth} 
                 onChange={handleInputChange}
                 required
+                readOnly
               />
+              {monthsCount > 1 && paymentData.rentMonth && (
+                <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+                  Paying for {monthsCount} consecutive months starting from {paymentData.rentMonth}
+                </small>
+              )}
             </div>
             
             <div className="form-group">
@@ -284,7 +369,7 @@ function RentPayments() {
               className="btn" 
               disabled={submitLoading}
             >
-              {submitLoading ? 'Recording...' : 'Record Payment'}
+              {submitLoading ? 'Recording...' : `Record Payment${monthsCount > 1 ? ` (${monthsCount} months)` : ''}`}
             </button>
           </form>
         </Card>

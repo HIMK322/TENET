@@ -12,7 +12,6 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
     phoneNumber: '',
     email: '',
     address: '',
-    moveInDate: new Date().toISOString().split('T')[0],
     unitId: '',
     rentAmount: ''
   });
@@ -42,7 +41,6 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
             phoneNumber: tenant.phoneNumber || '',
             email: tenant.email || '',
             address: tenant.address || '',
-            moveInDate: tenant.moveInDate ? new Date(tenant.moveInDate).toISOString().split('T')[0] : '',
             unitId: '',
             rentAmount: ''
           });
@@ -84,8 +82,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
           name: formData.name,
           phoneNumber: formData.phoneNumber,
           email: formData.email,
-          address: formData.address,
-          moveInDate: formData.moveInDate
+          address: formData.address
         });
         navigate(`/tenants/${tenant.id}`);
       } else if (isMoveIn) {
@@ -96,8 +93,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
             name: formData.name,
             phoneNumber: formData.phoneNumber,
             email: formData.email,
-            address: formData.address,
-            moveInDate: formData.moveInDate
+            address: formData.address
           },
           rentAmount: parseFloat(formData.rentAmount) || 0
         });
@@ -108,8 +104,7 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
           name: formData.name,
           phoneNumber: formData.phoneNumber,
           email: formData.email,
-          address: formData.address,
-          moveInDate: formData.moveInDate
+          address: formData.address
         });
         navigate('/tenants');
       }
@@ -172,19 +167,6 @@ function TenantForm({ tenant, isEditing = false, isMoveIn = false }) {
             className="form-control" 
             value={formData.address} 
             onChange={handleInputChange}
-          />
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="moveInDate">Move-In Date</label>
-          <input 
-            type="date" 
-            id="moveInDate" 
-            name="moveInDate" 
-            className="form-control" 
-            value={formData.moveInDate} 
-            onChange={handleInputChange}
-            required
           />
         </div>
         

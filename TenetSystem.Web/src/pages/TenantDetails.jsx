@@ -52,6 +52,12 @@ function TenantDetails() {
     }
   };
 
+  // Check if tenant is current (has active tenant history)
+  const isCurrentTenant = tenant?.tenantHistories?.some(th => th.moveOutDate === null) || false;
+  
+  // Get current occupancy info
+  const currentOccupancy = tenant?.tenantHistories?.find(th => th.moveOutDate === null);
+
   if (loading) return <div>Loading tenant details...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
@@ -102,8 +108,8 @@ function TenantDetails() {
         <div className="tenant-details">
           <Card title={tenant.name}>
             <div className="tenant-status">
-              <span className={`badge ${tenant.moveOutDate ? 'badge-danger' : 'badge-success'}`}>
-                {tenant.moveOutDate ? 'Former Tenant' : 'Current Tenant'}
+              <span className={`badge ${isCurrentTenant ? 'badge-success' : 'badge-danger'}`}>
+                {isCurrentTenant ? 'Current Tenant' : 'Former Tenant'}
               </span>
             </div>
             
@@ -126,45 +132,53 @@ function TenantDetails() {
               </div>
             )}
             
-            <div className="detail-row">
-              <span className="detail-label">Move-in Date:</span>
-              <span className="detail-value">
-                {new Date(tenant.moveInDate).toLocaleDateString()}
-              </span>
-            </div>
-            
-            {tenant.moveOutDate && (
+            {currentOccupancy && (
               <div className="detail-row">
-                <span className="detail-label">Move-out Date:</span>
+                <span className="detail-label">Current Unit:</span>
                 <span className="detail-value">
-                  {new Date(tenant.moveOutDate).toLocaleDateString()}
+                  <Link to={`/units/${currentOccupancy.unitId}`}>
+                    Unit {currentOccupancy.unit?.unitNumber || currentOccupancy.unitId}
+                  </Link>
+                </span>
+              </div>
+            )}
+            
+            {currentOccupancy && (
+              <div className="detail-row">
+                <span className="detail-label">Move-in Date:</span>
+                <span className="detail-value">
+                  {new Date(currentOccupancy.moveInDate).toLocaleDateString()}
                 </span>
               </div>
             )}
           </Card>
           
-          {/* <Card title="Occupied Units">
-            {tenant.units && tenant.units.length > 0 ? (
+          <Card title="Occupancy History">
+            {tenant.tenantHistories && tenant.tenantHistories.length > 0 ? (
               <div className="units-table-container">
                 <table>
                   <thead>
                     <tr>
-                      <th>Building</th>
                       <th>Unit</th>
-                      <th>Type</th>
-                      <th>Last Rent</th>
-                      <th>Actions</th>
+                      <th>Move-in Date</th>
+                      <th>Move-out Date</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {tenant.units.map(unit => (
-                      <tr key={unit.id}>
-                        <td>{unit.building?.name || 'Unknown Building'}</td>
-                        <td>{unit.unitNumber}</td>
-                        <td>{unit.type}</td>
-                        <td>${unit.lastRentAmount}</td>
+                    {tenant.tenantHistories.map(history => (
+                      <tr key={history.id}>
                         <td>
-                          <Link to={`/units/${unit.id}`} className="btn">View</Link>
+                          <Link to={`/units/${history.unitId}`}>
+                            Unit {history.unit?.unitNumber || history.unitId}
+                          </Link>
+                        </td>
+                        <td>{new Date(history.moveInDate).toLocaleDateString()}</td>
+                        <td>{history.moveOutDate ? new Date(history.moveOutDate).toLocaleDateString() : '-'}</td>
+                        <td>
+                          <span className={`badge ${history.moveOutDate ? 'badge-danger' : 'badge-success'}`}>
+                            {history.moveOutDate ? 'Past' : 'Current'}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -173,13 +187,10 @@ function TenantDetails() {
               </div>
             ) : (
               <div className="empty-state">
-                <p>This tenant is not currently occupying any units.</p>
-                <Link to={`/tenants/move-in?tenantId=${tenant.id}`} className="btn">
-                  Move In Tenant
-                </Link>
+                <p>No occupancy history found.</p>
               </div>
             )}
-          </Card> */}
+          </Card>
           
           <Card title="Rent Payment History">
             {rentHistory.length > 0 ? (

@@ -1,0 +1,25 @@
+
+the fouces of the dash board should be the receipt 
+ - the new receipt button doesn't work form the dash board
+ - recent payments are not needed 
+ - the tenats detail page should show the last month payed and, the months owed  the units the tenant occup
+ - there should not be a movein date when creating a new tenat
+ - in the new building remove the map url 
+ 
+
+
+the receipt should memic the the real one and have auto select proparty and handle mutible proparties
+check that the linked tables have the same layout as the books
+one for the tenet and one for the distrct (eastern door, Okba, swog)
+there is also the daily book but I think that is redundant so shelf it for now 
+
+
+backend junk
+    in unit there is tenent id and tenent obj being return, redundant if you ask me 
+    the tenent has something called  Navigation properties  not sure what those are 
+
+
+
+IP: 192.168.219.206
+DB: qgis_optical_ftth_nov19
+PS: eGyNr8Y2$Pt9&*KToqME2b

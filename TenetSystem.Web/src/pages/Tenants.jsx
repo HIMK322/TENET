@@ -54,9 +54,6 @@ function Tenants() {
                     <i className="icon-email"></i> {tenant.email}
                   </p>
                 )}
-                <p>
-                  <i className="icon-calendar"></i> Move-in: {new Date(tenant.moveInDate).toLocaleDateString()}
-                </p>
               </div>
               
               <div className="card-actions">
@@ -71,3 +68,4 @@ function Tenants() {
 }
 
 export default Tenants;
+

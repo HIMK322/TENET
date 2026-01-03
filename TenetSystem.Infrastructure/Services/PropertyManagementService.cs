@@ -53,11 +53,6 @@ namespace TenetSystem.Infrastructure.Services
             var unit = await _unitRepository.GetByIdAsync(unitId);
             if (unit.CurrentTenantId.HasValue)
             {
-                // Update tenant record
-                var tenant = await _tenantRepository.GetByIdAsync(unit.CurrentTenantId.Value);
-                tenant.MoveOutDate = DateTime.Now;
-                await _tenantRepository.UpdateAsync(tenant);
-                
                 // Update tenant history record
                 var tenantHistory = await _tenantHistoryRepository.GetByUnitIdAsync(unitId);
                 var currentTenantHistory = tenantHistory.Find(th => 

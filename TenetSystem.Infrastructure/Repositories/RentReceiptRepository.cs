@@ -53,8 +53,13 @@ namespace TenetSystem.Infrastructure.Repositories
 
         public async Task<DateTime?> GetNextUnpaidMonthAsync(int tenantId, int unitId)
         {
-            var tenant = await _context.Tenants.FindAsync(tenantId);
-            if (tenant == null) return null;
+            // Get the tenant's history for this unit
+            var tenantHistory = await _context.TenantHistories
+                .Where(th => th.TenantId == tenantId && th.UnitId == unitId && th.MoveOutDate == null)
+                .OrderByDescending(th => th.MoveInDate)
+                .FirstOrDefaultAsync();
+
+            if (tenantHistory == null) return null;
 
             var lastPayment = await _context.RentReceipts
                 .Where(r => r.TenantId == tenantId && r.UnitId == unitId)
@@ -64,7 +69,7 @@ namespace TenetSystem.Infrastructure.Repositories
             if (lastPayment == null)
             {
                 // No payments yet, return first month after move-in
-                return new DateTime(tenant.MoveInDate.Year, tenant.MoveInDate.Month, 1);
+                return new DateTime(tenantHistory.MoveInDate.Year, tenantHistory.MoveInDate.Month, 1);
             }
 
             // Return next month after last payment

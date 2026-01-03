@@ -89,9 +89,8 @@ namespace TenetSystem.API.Utilities
                 PhoneNumber = tenant.PhoneNumber,
                 Email = tenant.Email,
                 Address = tenant.Address,
-                MoveInDate = tenant.MoveInDate,
-                MoveOutDate = tenant.MoveOutDate,
-                Units = tenant.Units?.Select(u => u.ToSummaryDto()).ToList() ?? new List<UnitSummaryDto>()
+                Units = tenant.Units?.Select(u => u.ToSummaryDto()).ToList() ?? new List<UnitSummaryDto>(),
+                TenantHistories = tenant.TenantHistories?.Select(h => h.ToDto()).ToList() ?? new List<TenantHistoryDto>()
             };
         }
 

@@ -25,13 +25,15 @@ namespace TenetSystem.Infrastructure.Repositories
                 .Include(t => t.Units)
                 .Include(t => t.RentReceipts)
                 .Include(t => t.TenantHistories)
+                .ThenInclude(th => th.Unit)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<List<Tenant>> GetCurrentTenantsAsync()
         {
+            // Get tenants who currently occupy at least one unit
             return await _context.Tenants
-                .Where(t => t.MoveOutDate == null)
+                .Where(t => t.Units.Any())
                 .ToListAsync();
         }
 

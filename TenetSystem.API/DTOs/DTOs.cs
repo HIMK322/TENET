@@ -53,9 +53,8 @@ namespace TenetSystem.API.DTOs
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public string Address { get; set; }
-        public DateTime MoveInDate { get; set; }
-        public DateTime? MoveOutDate { get; set; }
         public List<UnitSummaryDto> Units { get; set; } = new List<UnitSummaryDto>();
+        public List<TenantHistoryDto> TenantHistories { get; set; } = new List<TenantHistoryDto>();
     }
 
     public class TenantSummaryDto

@@ -74,15 +74,13 @@ namespace TenetSystem.API.Controllers
         [HttpPost("MoveIn")]
         public async Task<ActionResult> MoveInTenant([FromBody] MoveInRequestDto request)
         {
-            Console.WriteLine(" !!!!!!!!!!!!!! problem !!!!!!!!!!!!!!!!!!!!!");
             // Convert DTO to entity
             var tenant = new Tenant
             {
                 Name = request.Tenant.Name,
                 PhoneNumber = request.Tenant.PhoneNumber,
                 Email = request.Tenant.Email,
-                Address = request.Tenant.Address,
-                MoveInDate = request.Tenant.MoveInDate
+                Address = request.Tenant.Address
             };
             
             await _propertyService.MoveInTenantAsync(request.UnitId, tenant, request.RentAmount);
