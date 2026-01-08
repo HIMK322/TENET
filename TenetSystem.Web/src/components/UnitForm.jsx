@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { unitsApi, buildingsApi, tenantsApi } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from '../i18n';
 import Card from './Card';
 import './UnitForm.css';
 
 function UnitForm({ unit, isEditing = false }) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
   const [buildings, setBuildings] = useState([]);
   const [tenets, setTenets] = useState([]);
   const [formData, setFormData] = useState({
     buildingId: '',
     unitNumber: '',
-    type: 'Apartment',
+    type: '1',
+    rentPeriod: '0', // 0 = Monthly, 1 = Yearly
     lastRentAmount: ''
   });
   const [loading, setLoading] = useState(false);
@@ -32,12 +37,11 @@ function UnitForm({ unit, isEditing = false }) {
             buildingId: unit.buildingId || '',
             tenetId: unit.tenetId || '',
             unitNumber: unit.unitNumber || '',
-            // type: unit.type || 'Apartment'
             type: unit.type?.toString() || '1',
+            rentPeriod: unit.rentPeriod === 'Yearly' ? '1' : '0',
             lastRentAmount: unit.lastRentAmount || ''
           });
         } else if (buildingResponse.data.length > 0) {
-          // Set default buildingId if no unit is provided and buildings exist
           setFormData(prev => ({ ...prev, buildingId: buildingResponse.data[0].id }));
         }
         
@@ -51,7 +55,6 @@ function UnitForm({ unit, isEditing = false }) {
   
     fetchData();
   }, [unit]);
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -62,13 +65,14 @@ function UnitForm({ unit, isEditing = false }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    console.log( parseInt(formData.tenetId));
+    
     try {
       const formattedData = {
         ...formData,
         buildingId: parseInt(formData.buildingId),
-        currentTenantId: parseInt(formData.tenetId),
-        type: formData.type === 'Shop' ? 0 : 1, 
+        currentTenantId: parseInt(formData.tenetId) || null,
+        type: formData.type === '0' ? 0 : 1,
+        rentPeriod: parseInt(formData.rentPeriod),
         lastRentAmount: parseFloat(formData.lastRentAmount) || 0
       };
       
@@ -89,13 +93,13 @@ function UnitForm({ unit, isEditing = false }) {
     }
   };
 
-  if (initialLoading) return <div>Loading form data...</div>;
+  if (initialLoading) return <div>{t('common.loading')}</div>;
 
   return (
-    <Card title={isEditing ? 'Edit Unit' : 'Add New Unit'}>
+    <Card title={isEditing ? t('units.form.editTitle') : t('units.form.title')}>
       <form onSubmit={handleSubmit} className="unit-form">
         <div className="form-group">
-          <label htmlFor="buildingId">Building</label>
+          <label htmlFor="buildingId">{t('units.form.building')}</label>
           <select 
             id="buildingId" 
             name="buildingId" 
@@ -104,7 +108,7 @@ function UnitForm({ unit, isEditing = false }) {
             onChange={handleInputChange}
             required
           >
-            <option value="">Select Building</option>
+            <option value="">{t('units.form.selectBuilding')}</option>
             {buildings.map(building => (
               <option key={building.id} value={building.id}>{building.name}</option>
             ))}
@@ -112,16 +116,15 @@ function UnitForm({ unit, isEditing = false }) {
         </div>
         
         <div className="form-group">
-          <label htmlFor="tenetId">Tenants</label>
+          <label htmlFor="tenetId">{t('units.form.tenant')}</label>
           <select 
             id="tenetId" 
             name="tenetId" 
             className="form-control" 
             value={formData.tenetId} 
             onChange={handleInputChange}
-            required
           >
-            <option value="">Select Tenant</option>
+            <option value="">{t('units.form.selectTenant')}</option>
             {tenets.map(tenet => (
               <option key={tenet.id} value={tenet.id}>
                 {tenet.name}
@@ -129,10 +132,9 @@ function UnitForm({ unit, isEditing = false }) {
             ))}
           </select>
         </div>
-
         
         <div className="form-group">
-          <label htmlFor="unitNumber">Unit Number</label>
+          <label htmlFor="unitNumber">{t('units.form.unitNumber')}</label>
           <input 
             type="text" 
             id="unitNumber" 
@@ -145,7 +147,7 @@ function UnitForm({ unit, isEditing = false }) {
         </div>
         
         <div className="form-group">
-          <label htmlFor="type">Unit Type</label>
+          <label htmlFor="type">{t('units.form.type')}</label>
           <select 
             id="type" 
             name="type" 
@@ -154,13 +156,28 @@ function UnitForm({ unit, isEditing = false }) {
             onChange={handleInputChange}
             required
           >
-            <option value="1">Apartment</option>
-            <option value="0">Shop</option>
+            <option value="1">{t('units.types.apartment')}</option>
+            <option value="0">{t('units.types.shop')}</option>
           </select>
         </div>
         
         <div className="form-group">
-          <label htmlFor="lastRentAmount">Last Rent Amount</label>
+          <label htmlFor="rentPeriod">{t('units.form.rentPeriod')}</label>
+          <select 
+            id="rentPeriod" 
+            name="rentPeriod" 
+            className="form-control" 
+            value={formData.rentPeriod} 
+            onChange={handleInputChange}
+            required
+          >
+            <option value="0">{t('units.monthly')}</option>
+            <option value="1">{t('units.yearly')}</option>
+          </select>
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="lastRentAmount">{t('units.form.lastRentAmount')}</label>
           <input 
             type="number" 
             id="lastRentAmount" 
@@ -179,10 +196,10 @@ function UnitForm({ unit, isEditing = false }) {
         
         <div className="form-actions">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/units')}>
-            Cancel
+            {t('units.form.cancel')}
           </button>
           <button type="submit" className="btn" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Unit'}
+            {loading ? t('units.form.saving') : t('units.form.save')}
           </button>
         </div>
       </form>

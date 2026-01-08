@@ -1,0 +1,50 @@
+.language-switcher {
+  position: fixed;
+  top: 20px;
+  left: 260px;
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.language-switcher:hover {
+  background-color: #2980b9;
+  transform: scale(1.1);
+}
+
+.language-switcher:active {
+  transform: scale(0.95);
+}
+
+/* RTL Support */
+[dir="rtl"] .language-switcher {
+  left: auto;
+  right: 260px;
+}
+
+@media (max-width: 768px) {
+  .language-switcher {
+    left: 90px;
+    top: 15px;
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+  
+  [dir="rtl"] .language-switcher {
+    left: auto;
+    right: 90px;
+  }
+}

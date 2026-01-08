@@ -9,6 +9,7 @@ namespace TenetSystem.Core.Models
         public int BuildingId { get; set; }
         public string UnitNumber { get; set; }
         public UnitType Type { get; set; }
+        public RentPeriod RentPeriod { get; set; } = RentPeriod.Monthly;
         public decimal LastRentAmount { get; set; }
         public int? CurrentTenantId { get; set; }
         

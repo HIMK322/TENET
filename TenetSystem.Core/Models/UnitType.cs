@@ -5,4 +5,10 @@ namespace TenetSystem.Core.Models
         Shop,
         Apartment
     }
+
+    public enum RentPeriod
+    {
+        Monthly,
+        Yearly
+    }
 }

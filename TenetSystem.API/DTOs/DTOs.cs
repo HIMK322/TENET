@@ -29,6 +29,7 @@ namespace TenetSystem.API.DTOs
         public int BuildingId { get; set; }
         public string UnitNumber { get; set; }
         public string Type { get; set; }
+        public string RentPeriod { get; set; }
         public decimal LastRentAmount { get; set; }
         public int? CurrentTenantId { get; set; }
         public BuildingSummaryDto Building { get; set; }
@@ -40,6 +41,7 @@ namespace TenetSystem.API.DTOs
         public int Id { get; set; }
         public string UnitNumber { get; set; }
         public string Type { get; set; }
+        public string RentPeriod { get; set; }
         public bool IsOccupied => CurrentTenantId.HasValue;
         public int? CurrentTenantId { get; set; }
         public decimal LastRentAmount { get; set; }
@@ -74,6 +76,7 @@ namespace TenetSystem.API.DTOs
         public DateTime PaymentDate { get; set; }
         public DateTime RentMonth { get; set; }
         public decimal AmountPaid { get; set; }
+        public string RentPeriod { get; set; }
         public string PaymentMethod { get; set; }
         public string Notes { get; set; }
         public TenantSummaryDto Tenant { get; set; }
@@ -100,6 +103,7 @@ namespace TenetSystem.API.DTOs
         public decimal Amount { get; set; }
         public DateTime PaymentDate { get; set; }
         public DateTime RentMonth { get; set; }
+        public string RentPeriod { get; set; }
         public string PaymentMethod { get; set; }
         public string Notes { get; set; }
     }

@@ -10,6 +10,7 @@ namespace TenetSystem.Core.Models
         public DateTime PaymentDate { get; set; }
         public DateTime RentMonth { get; set; }
         public decimal AmountPaid { get; set; }
+        public RentPeriod RentPeriod { get; set; } = RentPeriod.Monthly;
         public string? PaymentMethod { get; set; }
         public string? Notes { get; set; }
         

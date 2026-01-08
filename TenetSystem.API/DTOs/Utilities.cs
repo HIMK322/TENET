@@ -51,6 +51,7 @@ namespace TenetSystem.API.Utilities
                 BuildingId = unit.BuildingId,
                 UnitNumber = unit.UnitNumber,
                 Type = unit.Type.ToString(),
+                RentPeriod = unit.RentPeriod.ToString(),
                 LastRentAmount = unit.LastRentAmount,
                 CurrentTenantId = unit.CurrentTenantId,
                 Building = unit.Building?.ToSummaryDto(),
@@ -67,6 +68,7 @@ namespace TenetSystem.API.Utilities
                 Id = unit.Id,
                 UnitNumber = unit.UnitNumber,
                 Type = unit.Type.ToString(),
+                RentPeriod = unit.RentPeriod.ToString(),
                 CurrentTenantId = unit.CurrentTenantId,
                 LastRentAmount = unit.LastRentAmount
             };
@@ -125,6 +127,7 @@ namespace TenetSystem.API.Utilities
                 PaymentDate = receipt.PaymentDate,
                 RentMonth = receipt.RentMonth,
                 AmountPaid = receipt.AmountPaid,
+                RentPeriod = receipt.RentPeriod.ToString(),
                 PaymentMethod = receipt.PaymentMethod,
                 Notes = receipt.Notes,
                 Tenant = receipt.Tenant?.ToSummaryDto(),

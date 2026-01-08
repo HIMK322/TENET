@@ -91,12 +91,20 @@ namespace TenetSystem.API.Controllers
                 return BadRequest("A payment for this month already exists");
             }
 
+            // Parse RentPeriod from string
+            RentPeriod rentPeriod = RentPeriod.Monthly;
+            if (!string.IsNullOrEmpty(request.RentPeriod))
+            {
+                System.Enum.TryParse(request.RentPeriod, out rentPeriod);
+            }
+
             await _propertyService.RecordRentPaymentAsync(
                 request.TenantId,
                 request.UnitId,
                 request.Amount,
                 request.PaymentDate,
                 request.RentMonth,
+                rentPeriod,
                 request.PaymentMethod,
                 request.Notes);
                 
