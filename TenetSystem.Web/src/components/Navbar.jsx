@@ -19,6 +19,7 @@ function Navbar() {
       <nav className="navbar">
         <div className="navbar-brand">
           <h1>{t('nav.appName')}</h1>
+            <LanguageSwitcher />  {/* Add this line */}
         </div>
         <ul className="navbar-nav">
           <li className={`nav-item ${isActive('/')}`}>

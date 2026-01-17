@@ -18,14 +18,11 @@ export const LanguageProvider = ({ children }) => {
     setLanguageState(lang);
     saveLanguage(lang);
     
-    // Update document direction and lang attribute
     document.documentElement.setAttribute('lang', lang);
-    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
   };
 
   useEffect(() => {
     // Set initial direction
-    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
     document.documentElement.setAttribute('lang', language);
   }, [language]);
 
