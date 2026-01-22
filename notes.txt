@@ -23,3 +23,9 @@ backend junk
 IP: 192.168.219.206
 DB: qgis_optical_ftth_nov19
 PS: eGyNr8Y2$Pt9&*KToqME2b
+
+
+
+needed fixes
+    when recording the first payment the rent month field in empty and cann't be field in
+    there is a formen tenant button? in tenant page for ahmend adile

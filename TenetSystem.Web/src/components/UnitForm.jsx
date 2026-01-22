@@ -28,14 +28,14 @@ function UnitForm({ unit, isEditing = false }) {
       try {
         const buildingResponse = await buildingsApi.getAll();
         setBuildings(buildingResponse.data);
-  
-        const tenetResponse = await tenantsApi.getAll();
-        setTenets(tenetResponse.data);
+
+        const tenantResponse = await tenantsApi.getAll();
+        setTenets(tenantResponse.data);
         
         if (unit) {
           setFormData({
             buildingId: unit.buildingId || '',
-            tenetId: unit.tenetId || '',
+            tenetId: unit.currentTenantId || '',
             unitNumber: unit.unitNumber || '',
             type: unit.type?.toString() || '1',
             rentPeriod: unit.rentPeriod === 'Yearly' ? '1' : '0',
@@ -52,7 +52,7 @@ function UnitForm({ unit, isEditing = false }) {
         setInitialLoading(false);
       }
     };
-  
+
     fetchData();
   }, [unit]);
 
@@ -70,7 +70,7 @@ function UnitForm({ unit, isEditing = false }) {
       const formattedData = {
         ...formData,
         buildingId: parseInt(formData.buildingId),
-        currentTenantId: parseInt(formData.tenetId) || null,
+        currentTenantId: formData.tenetId ? parseInt(formData.tenetId) : null,
         type: formData.type === '0' ? 0 : 1,
         rentPeriod: parseInt(formData.rentPeriod),
         lastRentAmount: parseFloat(formData.lastRentAmount) || 0

@@ -27,6 +27,7 @@ function App() {
               <Route path="/tenants" element={<Tenants />} />
               <Route path="/tenants/:id" element={<TenantDetails />} />
               <Route path="/rent-payments" element={<RentPayments />} />
+                <Route path="/rent-payments/new" element={<RentPayments />} /> 
             </Routes>
           </main>
         </div>

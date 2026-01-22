@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { tenantsApi } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from '../i18n';
 import Card from '../components/Card';
 import './Tenants.css';
 
 function Tenants() {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
+  
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,7 +17,7 @@ function Tenants() {
   useEffect(() => {
     const fetchTenants = async () => {
       try {
-        const response = await tenantsApi.getCurrent();
+        const response = await tenantsApi.getAll();
         setTenants(response.data);
         setLoading(false);
       } catch (err) {
@@ -25,20 +30,20 @@ function Tenants() {
     fetchTenants();
   }, []);
 
-  if (loading) return <div>Loading tenants...</div>;
+  if (loading) return <div>{t('common.loading')}</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div className="tenants-page">
       <div className="page-header">
-        <h1>Current Tenants</h1>
-        <Link to="/tenants/new" className="btn">Add New Tenant</Link>
+        <h1>{t('tenants.title')}</h1>
+        <Link to="/tenants/new" className="btn">{t('tenants.addNew')}</Link>
       </div>
       
       {tenants.length === 0 ? (
         <div className="empty-state">
-          <p>No tenants found. Start by adding your first tenant.</p>
-          <Link to="/tenants/new" className="btn">Add New Tenant</Link>
+          <p>{t('tenants.noTenants')}</p>
+          <Link to="/tenants/new" className="btn">{t('tenants.addNew')}</Link>
         </div>
       ) : (
         <div className="tenants-grid">
@@ -57,7 +62,7 @@ function Tenants() {
               </div>
               
               <div className="card-actions">
-                <Link to={`/tenants/${tenant.id}`} className="btn">View Details</Link>
+                <Link to={`/tenants/${tenant.id}`} className="btn">{t('tenants.viewDetails')}</Link>
               </div>
             </Card>
           ))}
@@ -68,4 +73,3 @@ function Tenants() {
 }
 
 export default Tenants;
-

@@ -127,7 +127,7 @@ export const en = {
   
   // Tenants
   tenants: {
-    title: 'Current Tenants',
+    title: 'Tenants',
     addNew: 'Add New Tenant',
     noTenants: 'No tenants found. Start by adding your first tenant.',
     viewDetails: 'View Details',

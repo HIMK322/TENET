@@ -3,6 +3,7 @@ using TenetSystem.API.DTOs;
 using TenetSystem.API.Utilities;
 using TenetSystem.Core.Models;
 using TenetSystem.Infrastructure.Repositories;
+using TenetSystem.Infrastructure.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,6 +14,14 @@ namespace TenetSystem.API.Controllers
     public class UnitsController : ControllerBase
     {
         private readonly UnitRepository _unitRepository;
+        private readonly TenetSystemService _tenetSystemService;
+
+        public UnitsController(UnitRepository unitRepository, TenetSystemService tenetSystemService) // Add service
+        {
+            _unitRepository = unitRepository;
+            _tenetSystemService = tenetSystemService; // Add this
+        }
+
 
         public UnitsController(UnitRepository unitRepository)
         {
@@ -66,7 +75,29 @@ namespace TenetSystem.API.Controllers
                 return BadRequest();
             }
 
-            await _unitRepository.UpdateAsync(unit);
+            // Get the existing unit to check if tenant changed
+            var existingUnit = await _unitRepository.GetByIdAsync(id);
+            if (existingUnit == null)
+            {
+                return NotFound();
+            }
+
+            // Check if CurrentTenantId has changed
+            if (existingUnit.CurrentTenantId != unit.CurrentTenantId)
+            {
+                // Use the service method to handle tenant history
+                await _tenetSystemService.UpdateUnitWithTenantManagementAsync(
+                    id, 
+                    unit.CurrentTenantId, 
+                    unit.LastRentAmount
+                );
+            }
+            else
+            {
+                // Just update the unit normally if tenant hasn't changed
+                await _unitRepository.UpdateAsync(unit);
+            }
+            
             return NoContent();
         }
 

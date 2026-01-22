@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import Select from 'react-select'
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; 
 import { rentReceiptsApi, tenantsApi, unitsApi } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from '../i18n';
 import Card from '../components/Card';
 import './RentPayments.css';
 import { useMemo } from 'react';
 
+
 function RentPayments() {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
+  const location = useLocation();
   const [receipts, setReceipts] = useState([]);
   const [showRecordPayment, setShowRecordPayment] = useState(false);
   const [tenants, setTenants] = useState([]);
@@ -50,6 +56,12 @@ function RentPayments() {
 
     fetchData();
   }, [submitSuccess]);
+
+    useEffect(() => {
+    if (location.pathname.endsWith('/new')) {
+      setShowRecordPayment(true);
+    }
+  }, [location.pathname]);
 
   // Fetch next unpaid month when tenant and unit are selected
   useEffect(() => {
@@ -98,21 +110,6 @@ function RentPayments() {
     if (monthsCount > 1) {
       setMonthsCount(prev => prev - 1);
     }
-  };
-
-  const getRentMonthDisplay = () => {
-    if (!paymentData.rentMonth) return '';
-    
-    if (monthsCount === 1) {
-      return paymentData.rentMonth;
-    }
-    
-    const [year, month] = paymentData.rentMonth.split('-');
-    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + monthsCount - 1);
-    
-    return `${paymentData.rentMonth} (${monthsCount} months)`;
   };
 
   const handleSubmit = async (e) => {
@@ -169,32 +166,32 @@ function RentPayments() {
     return units.filter(u => u.currentTenantId === parseInt(paymentData.tenantId));
   }, [units, paymentData.tenantId]);
 
-  if (loading) return <div>Loading rent payments...</div>;
+  if (loading) return <div>{t('common.loading')}</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div className="rent-payments-page">
       <div className="page-header">
-        <h1>Rent Payments</h1>
+        <h1>{t('rentPayments.title')}</h1>
         <button 
           className="btn" 
           onClick={() => setShowRecordPayment(!showRecordPayment)}
         >
-          {showRecordPayment ? 'Cancel' : 'Record Payment'}
+          {showRecordPayment ? t('rentPayments.cancel') : t('rentPayments.recordPayment')}
         </button>
       </div>
       
       {submitSuccess && (
         <div className="alert alert-success">
-          Payment recorded successfully!
+          {t('rentPayments.form.success')}
         </div>
       )}
       
       {showRecordPayment && (
-        <Card title="Record Rent Payment">
+        <Card title={t('rentPayments.form.title')}>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="tenantId">Tenant</label>
+              <label htmlFor="tenantId">{t('rentPayments.form.tenant')}</label>
               <Select
                 id="tenantId"
                 name="tenantId"
@@ -226,26 +223,26 @@ function RentPayments() {
                     }
                   }
                 }}
-                placeholder="Select or search tenant..."
+                placeholder={t('rentPayments.form.selectTenant')}
                 isClearable
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="unitId">Unit</label>
+              <label htmlFor="unitId">{t('rentPayments.form.unit')}</label>
               <Select
                 id="unitId"
                 name="unitId"
                 options={tenantUnits.map(unit => ({
                   value: unit.id,
-                  label: `${unit.building?.name || 'Unknown Building'} - Unit ${unit.unitNumber}`
+                  label: `${unit.building?.name || t('common.unknown')} - ${t('units.unitNumber')} ${unit.unitNumber}`
                 }))}
                 value={
                   units
                     .filter(u => u.id === parseInt(paymentData.unitId))
                     .map(u => ({
                       value: u.id,
-                      label: `${u.building?.name || 'Unknown Building'} - Unit ${u.unitNumber}`
+                      label: `${u.building?.name || t('common.unknown')} - ${t('units.unitNumber')} ${u.unitNumber}`
                     }))[0] || null
                 }
                 onChange={option => {
@@ -269,13 +266,13 @@ function RentPayments() {
                     setPaymentData(prev => ({ ...prev, tenantId: '', amount: '' }));
                   }
                 }}
-                placeholder="Select or search unit..."
+                placeholder={t('rentPayments.form.selectUnit')}
                 isClearable
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="amount">Amount</label>
+              <label htmlFor="amount">{t('rentPayments.form.amount')}</label>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <button 
                   type="button" 
@@ -311,13 +308,13 @@ function RentPayments() {
               </div>
               {monthsCount > 1 && (
                 <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
-                  Paying for {monthsCount} months (${monthlyRent} × {monthsCount})
+                  {t('rentPayments.form.payingForMonths', { count: monthsCount, amount: monthlyRent })}
                 </small>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="paymentDate">Payment Date</label>
+              <label htmlFor="paymentDate">{t('rentPayments.form.paymentDate')}</label>
               <input 
                 type="date" 
                 id="paymentDate" 
@@ -330,7 +327,7 @@ function RentPayments() {
             </div>
             
             <div className="form-group">
-              <label htmlFor="rentMonth">Rent Month</label>
+              <label htmlFor="rentMonth">{t('rentPayments.form.rentMonth')}</label>
               <input 
                 type="month" 
                 id="rentMonth" 
@@ -343,13 +340,13 @@ function RentPayments() {
               />
               {monthsCount > 1 && paymentData.rentMonth && (
                 <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
-                  Paying for {monthsCount} consecutive months starting from {paymentData.rentMonth}
+                  {t('rentPayments.form.payingConsecutive', { count: monthsCount, month: paymentData.rentMonth })}
                 </small>
               )}
             </div>
             
             <div className="form-group">
-              <label htmlFor="notes">Notes</label>
+              <label htmlFor="notes">{t('rentPayments.form.notes')}</label>
               <textarea 
                 id="notes" 
                 name="notes" 
@@ -369,7 +366,9 @@ function RentPayments() {
               className="btn" 
               disabled={submitLoading}
             >
-              {submitLoading ? 'Recording...' : `Record Payment${monthsCount > 1 ? ` (${monthsCount} months)` : ''}`}
+              {submitLoading 
+                ? t('rentPayments.form.recording') 
+                : `${t('rentPayments.form.record')}${monthsCount > 1 ? ` (${monthsCount} ${language === 'ar' ? 'أشهر' : 'months'})` : ''}`}
             </button>
           </form>
         </Card>
@@ -377,12 +376,12 @@ function RentPayments() {
       
       {receipts.length === 0 ? (
         <div className="empty-state">
-          <p>No rent payments recorded yet.</p>
+          <p>{t('rentPayments.noPayments')}</p>
           <button 
             className="btn" 
             onClick={() => setShowRecordPayment(true)}
           >
-            Record First Payment
+            {t('rentPayments.recordFirst')}
           </button>
         </div>
       ) : (
@@ -390,28 +389,28 @@ function RentPayments() {
           <table>
             <thead>
               <tr>
-                <th>Payment Date</th>
-                <th>Tenant</th>
-                <th>Unit</th>
-                <th>Amount</th>
-                <th>Rent Period</th>
-                <th>Actions</th>
+                <th>{t('rentPayments.table.paymentDate')}</th>
+                <th>{t('rentPayments.table.tenant')}</th>
+                <th>{t('rentPayments.table.unit')}</th>
+                <th>{t('rentPayments.table.amount')}</th>
+                <th>{t('rentPayments.table.rentMonth')}</th>
+                <th>{t('rentPayments.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {receipts.map(receipt => (
                 <tr key={receipt.id}>
                   <td>{new Date(receipt.paymentDate).toLocaleDateString()}</td>
-                  <td>{receipt.tenant?.name || 'Unknown'}</td>
+                  <td>{receipt.tenant?.name || t('common.unknown')}</td>
                   <td>
                     {receipt.unit?.building?.name 
-                      ? `${receipt.unit.building.name} - Unit ${receipt.unit.unitNumber}` 
-                      : `Unit ${receipt.unit?.unitNumber || 'Unknown'}`}
+                      ? `${receipt.unit.building.name} - ${t('units.unitNumber')} ${receipt.unit.unitNumber}` 
+                      : `${t('units.unitNumber')} ${receipt.unit?.unitNumber || t('common.unknown')}`}
                   </td>
                   <td>${receipt.amountPaid}</td>
                   <td>{new Date(receipt.rentMonth).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}</td>
                   <td>
-                    <Link to={`/rent-payments/${receipt.id}`} className="btn">View</Link>
+                    <Link to={`/rent-payments/${receipt.id}`} className="btn">{t('rentPayments.table.view')}</Link>
                   </td>
                 </tr>
               ))}

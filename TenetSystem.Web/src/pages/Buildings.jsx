@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { buildingsApi } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useTranslation } from '../i18n';
 import Card from '../components/Card';
 import './Buildings.css';
 
 function Buildings() {
+  const { language } = useLanguage();
+  const { t } = useTranslation(language);
+  
   const [buildings, setBuildings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,20 +30,20 @@ function Buildings() {
     fetchBuildings();
   }, []);
 
-  if (loading) return <div>Loading buildings...</div>;
+  if (loading) return <div>{t('common.loading')}</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div className="buildings-page">
       <div className="page-header">
-        <h1>Buildings</h1>
-        <Link to="/buildings/new" className="btn">Add New Building</Link>
+        <h1>{t('buildings.title')}</h1>
+        <Link to="/buildings/new" className="btn">{t('buildings.addNew')}</Link>
       </div>
       
       {buildings.length === 0 ? (
         <div className="empty-state">
-          <p>No buildings found. Start by adding your first building.</p>
-          <Link to="/buildings/new" className="btn">Add New Building</Link>
+          <p>{t('buildings.noBuildings')}</p>
+          <Link to="/buildings/new" className="btn">{t('buildings.addNew')}</Link>
         </div>
       ) : (
         <div className="buildings-grid">
@@ -49,11 +54,11 @@ function Buildings() {
               <div className="building-stats">
                 <div className="stat">
                   <span className="stat-value">{building.units?.length || 0}</span>
-                  <span className="stat-label">Units</span>
+                  <span className="stat-label">{t('buildings.units')}</span>
                 </div>
               </div>
               <div className="card-actions">
-                <Link to={`/buildings/${building.id}`} className="btn">View Details</Link>
+                <Link to={`/buildings/${building.id}`} className="btn">{t('buildings.viewDetails')}</Link>
               </div>
             </Card>
           ))}

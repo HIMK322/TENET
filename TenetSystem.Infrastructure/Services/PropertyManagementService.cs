@@ -125,5 +125,57 @@ namespace TenetSystem.Infrastructure.Services
         {
             return await _tenantRepository.GetCurrentTenantsAsync();
         }
+
+        // Update unit with tenant history management
+        public async Task UpdateUnitWithTenantManagementAsync(int unitId, int? newTenantId, decimal? newRentAmount = null)
+        {
+            // Get the current unit state
+            var unit = await _unitRepository.GetByIdAsync(unitId);
+            if (unit == null) return;
+            
+            var oldTenantId = unit.CurrentTenantId;
+            
+            // If tenant is changing, handle the history
+            if (oldTenantId != newTenantId)
+            {
+                // Move out the old tenant if there was one
+                if (oldTenantId.HasValue)
+                {
+                    var oldTenantHistory = await _tenantHistoryRepository.GetByUnitIdAsync(unitId);
+                    var currentHistory = oldTenantHistory.FirstOrDefault(th => 
+                        th.TenantId == oldTenantId.Value && 
+                        th.MoveOutDate == null);
+                    
+                    if (currentHistory != null)
+                    {
+                        currentHistory.MoveOutDate = DateTime.Now;
+                        await _tenantHistoryRepository.UpdateAsync(currentHistory);
+                    }
+                }
+                
+                // Move in the new tenant if there is one
+                if (newTenantId.HasValue)
+                {
+                    var newTenantHistory = new TenantHistory
+                    {
+                        TenantId = newTenantId.Value,
+                        UnitId = unitId,
+                        MoveInDate = DateTime.Now
+                    };
+                    await _tenantHistoryRepository.AddAsync(newTenantHistory);
+                }
+                
+                // Update the unit's current tenant
+                unit.CurrentTenantId = newTenantId;
+            }
+            
+            // Update rent amount if provided
+            if (newRentAmount.HasValue)
+            {
+                unit.LastRentAmount = newRentAmount.Value;
+            }
+            
+            await _unitRepository.UpdateAsync(unit);
+        }
     }
 }
